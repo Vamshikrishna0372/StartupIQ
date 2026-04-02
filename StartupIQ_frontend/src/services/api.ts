@@ -21,13 +21,26 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor to handle errors globally (e.g., 401 Unauthorized)
+// Interceptor to handle errors globally and implement auto-retry for Render cold starts
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const { config, response } = error;
+    
+    // Retry logic for 502/503/504 or network errors (common during cold start)
+    if (!config || !config.retry) config.retry = 0;
+    const MAX_RETRIES = 2;
+    
+    if (config.retry < MAX_RETRIES && (!response || (response.status >= 500 && response.status <= 504))) {
+      config.retry += 1;
+      const delay = config.retry * 2000; // 2s, 4s delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+      console.log(`Cold start detected. Retrying request (${config.retry}/${MAX_RETRIES})...`);
+      return api(config);
+    }
+
     const isAuthRequest = error.config?.url?.includes('/auth/login');
     if (error.response && error.response.status === 401 && !isAuthRequest) {
-      // Handle logout or redirection to login only for protected requests
       localStorage.removeItem('token');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';

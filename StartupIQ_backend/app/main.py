@@ -37,14 +37,15 @@ origins = [
     "http://127.0.0.1:3000",
 ]
 
-# CORS - Explicit list to allow credentials
+# CORS - Production Whitelist
 allowed_origins = [
+    "https://startup-iq-plum.vercel.app",
+    "https://startup-iq-plum.vercel.app/",
+    "https://startup-iq-git-main-vamshikrishna0372s-projects.vercel.app",
     "http://localhost:8080",
-    "http://localhost:8081",
     "http://localhost:5173",
-    "http://localhost:3000",
     "http://127.0.0.1:8080",
-    "http://127.0.0.1:8001",
+    "http://127.0.0.1:8002",
 ]
 
 app.add_middleware(
