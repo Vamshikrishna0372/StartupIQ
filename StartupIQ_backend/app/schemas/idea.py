@@ -12,16 +12,17 @@ class IdeaCreate(BaseModel):
 
 class IdeaResponse(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
-    business_idea: str
-    description: str
-    success_rate: float
-    demand_level: str
-    competition_level: str
-    profit_estimation: str
-    ai_insights: Optional[Dict[str, Any]] = None
-    inputs: Optional[IdeaCreate] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    business_idea: Optional[str] = "Untitled Business"
+    description: Optional[str] = "No description"
+    success_rate: Optional[float] = 0.0
+    demand_level: Optional[str] = "Medium"
+    competition_level: Optional[str] = "Medium"
+    profit_estimation: Optional[str] = "N/A"
+    ai_insights: Any = None
+    inputs: Any = None
+    timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
     is_saved: bool = False
+    user_id: Optional[str] = None
 
     class Config:
         populate_by_name = True

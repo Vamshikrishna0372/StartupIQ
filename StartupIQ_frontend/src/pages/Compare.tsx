@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useIdeaStore } from '@/stores/ideaStore';
-import { ArrowRight, Trophy, TrendingUp, BarChart3, DollarSign, Target } from 'lucide-react';
+import { ArrowRight, Trophy, TrendingUp, BarChart3, IndianRupee, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
@@ -135,7 +135,7 @@ const Compare = () => {
             {/* Profit comparison */}
             <div className="glass-card p-4">
               <div className="mb-3 flex items-center gap-2">
-                <DollarSign className="h-3.5 w-3.5 text-primary" />
+                <IndianRupee className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Estimated Profit</span>
               </div>
               <div className="grid grid-cols-2 gap-5">

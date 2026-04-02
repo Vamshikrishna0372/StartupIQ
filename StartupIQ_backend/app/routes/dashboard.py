@@ -6,37 +6,58 @@ from datetime import datetime
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+# Simple In-Memory Cache
+_summary_cache = {}
+CACHE_TTL = 30 # seconds
+
 @router.get("/summary")
 async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["_id"]
+    
+    # Check Cache
+    now = datetime.utcnow().timestamp()
+    if user_id in _summary_cache:
+        data, ts = _summary_cache[user_id]
+        if now - ts < CACHE_TTL:
+            return data
+
     try:
         ideas_col = get_ideas_collection()
         saved_col = get_saved_collection()
         
-        total_analyses = await ideas_col.count_documents({"user_id": current_user["_id"]})
+        # Combined aggregation for count and avg success rate
+        pipeline = [
+            {"$match": {"user_id": user_id}},
+            {"$group": {
+                "_id": None,
+                "total": {"$sum": 1},
+                "avg_success": {"$avg": "$success_rate"}
+            }}
+        ]
         
-        avg_success_rate = 0.0
-        if total_analyses > 0:
-            pipeline = [
-                {"$match": {"user_id": current_user["_id"]}},
-                {"$group": {"_id": None, "avg_success": {"$avg": "$success_rate"}}}
-            ]
-            async for res in ideas_col.aggregate(pipeline):
-                avg_success_rate = round(res["avg_success"], 1)
+        stats = {"total": 0, "avg_success": 0.0}
+        async for res in ideas_col.aggregate(pipeline):
+            stats["total"] = res["total"]
+            stats["avg_success"] = round(res["avg_success"], 1)
 
-        saved_ideas_count = await saved_col.count_documents({"user_id": current_user["_id"]})
+        saved_count = await saved_col.count_documents({"user_id": user_id})
         
-        return {
-            "total_analyses": total_analyses,
-            "avg_success_rate": avg_success_rate,
-            "saved_ideas_count": saved_ideas_count,
+        response = {
+            "total_analyses": stats["total"],
+            "avg_success_rate": stats["avg_success"],
+            "saved_ideas_count": saved_count,
             "trending_industries": [
-                {"name": "Generative AI", "growth": 45, "revenue": "$1.2B"},
-                {"name": "HealthTech", "growth": 28, "revenue": "$850M"},
-                {"name": "Sustainable Energy", "growth": 32, "revenue": "$2.1B"},
-                {"name": "Cybersecurity", "growth": 25, "revenue": "$980M"},
-                {"name": "FinTech", "growth": 30, "revenue": "$3.5B"}
+                {"name": "Generative AI", "growth": 45, "revenue": "₹120 Cr"},
+                {"name": "HealthTech", "growth": 28, "revenue": "₹85 Cr"},
+                {"name": "Sustainable Energy", "growth": 32, "revenue": "₹210 Cr"},
+                {"name": "Cybersecurity", "growth": 25, "revenue": "₹98 Cr"},
+                {"name": "FinTech", "growth": 30, "revenue": "₹350 Cr"}
             ]
         }
+        
+        # Save to Cache
+        _summary_cache[user_id] = (response, now)
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -45,7 +66,7 @@ async def get_dashboard_trends(current_user: dict = Depends(get_current_user)):
     try:
         ideas_col = get_ideas_collection()
         pipeline = [
-            {"$match": {"user_id": current_user["_id"]}},
+            {"$match": {"user_id": current_user["_id"], "timestamp": {"$exists": True, "$ne": None}}},
             {"$group": {
                 "_id": {"$month": "$timestamp"},
                 "count": {"$sum": 1},
@@ -57,7 +78,15 @@ async def get_dashboard_trends(current_user: dict = Depends(get_current_user)):
         trends = await cursor.to_list(length=12)
         
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        trend_data = [{"name": months[t["_id"]-1], "ideas": t["count"], "success": round(t["avg_success"], 1)} for t in trends]
+        trend_data = []
+        for t in trends:
+            month_idx = t["_id"]
+            if month_idx and 1 <= month_idx <= 12:
+                trend_data.append({
+                    "name": months[month_idx - 1],
+                    "ideas": t["count"],
+                    "success": round(t.get("avg_success", 0) or 0, 1)
+                })
         
         return {"trend_data": trend_data}
     except Exception as e:

@@ -8,6 +8,7 @@ import { insightsApi } from '@/services/api';
 import { useIdeaStore } from '@/stores/ideaStore';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const Insights = () => {
   const { results, getHistory } = useIdeaStore();
@@ -67,22 +68,32 @@ const Insights = () => {
       <div className="space-y-6 animate-fade-in">
         {/* Idea Selector */}
         <div className="glass-card p-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Select Concept to Analyze</h3>
-          <div className="flex flex-wrap gap-2">
-            {history.slice(0, 5).map((item, i) => (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Concept for Insight</h3>
+            <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary/70">{history.length} Saved Concepts</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {history.slice(0, 10).map((item, i) => (
               <button 
                 key={item._id || i} 
                 onClick={() => handleAnalyze(item)}
                 disabled={isLoading}
-                className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
-                  analysis?.idea === item.business_idea ? 'bg-primary/10 border-primary shadow-sm' : 'bg-card border-border hover:bg-muted'
+                className={`text-left p-3 rounded-xl border text-[11px] transition-all duration-200 group relative ${
+                  analysis?.idea === item.business_idea 
+                    ? 'bg-primary/5 border-primary ring-1 ring-primary/20 shadow-sm' 
+                    : 'bg-card border-border hover:bg-muted/50 hover:border-border/80'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <Lightbulb className="h-2.5 w-2.5 text-primary" />
-                  <span className="font-semibold truncate max-w-[120px]">{item.business_idea}</span>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className={cn("p-1.5 rounded-lg", analysis?.idea === item.business_idea ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                    <Lightbulb className="h-2.5 w-2.5" />
+                  </div>
+                  <span className="font-bold truncate text-foreground">{item.business_idea}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground line-clamp-1">{item.description}</div>
+                <div className="text-[10px] text-muted-foreground line-clamp-1 group-hover:line-clamp-none transition-all">{item.description}</div>
+                {analysis?.idea === item.business_idea && (
+                  <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                )}
               </button>
             ))}
           </div>

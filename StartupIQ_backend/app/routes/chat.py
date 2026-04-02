@@ -34,8 +34,9 @@ async def chat_with_advisor(request: ChatRequest, current_user: dict = Depends(g
 async def get_chat_history(current_user: dict = Depends(get_current_user)):
     try:
         chat_col = get_chat_collection()
-        cursor = chat_col.find({"user_id": current_user["_id"]}).sort("timestamp", -1)
-        history = await cursor.to_list(length=100)
+        # Optimized with projection and limit
+        cursor = chat_col.find({"user_id": current_user["_id"]}, {"messages": 1}).sort("timestamp", -1).limit(50)
+        history = await cursor.to_list(length=50)
         
         formatted_history = []
         for entry in history:

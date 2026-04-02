@@ -96,20 +96,22 @@ export const useIdeaStore = create<IdeaState>((set) => ({
   getSavedIdeas: async () => {
     try {
       const response = await ideaApi.getSaved();
-      return response.data;
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.saved_ideas || data.ideas || []);
     } catch (error) {
       console.error("Fetch Saved Ideas Error:", error);
-      throw error;
+      return [];
     }
   },
 
   getHistory: async () => {
     try {
       const response = await ideaApi.getHistory();
-      return response.data;
+      const data = response.data;
+      return Array.isArray(data) ? data : (data.history || data.ideas || []);
     } catch (error) {
       console.error("Fetch History Error:", error);
-      throw error;
+      return [];
     }
   },
 

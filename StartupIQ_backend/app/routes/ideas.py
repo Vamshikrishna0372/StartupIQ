@@ -42,19 +42,21 @@ async def get_history(current_user: dict = Depends(get_current_user)):
         saved_col = get_saved_collection()
         
         user_id = ObjectId(current_user["_id"]) if isinstance(current_user["_id"], str) else current_user["_id"]
-        cursor = ideas_col.find({"user_id": user_id}).sort("timestamp", -1)
-        history = await cursor.to_list(length=100)
+        cursor = ideas_col.find({"user_id": user_id}).sort("timestamp", -1).limit(50)
+        history = await cursor.to_list(length=50)
         
         for item in history:
             item["_id"] = str(item["_id"])
-            if "user_id" in item:
-                item["user_id"] = str(item["user_id"])
-            # Check if this idea is saved
-            is_saved = await saved_col.find_one({"original_id": item["_id"], "user_id": current_user["_id"]})
-            item["is_saved"] = bool(is_saved)
+            item["user_id"] = str(item["user_id"]) if "user_id" in item else str(user_id)
+            # Basic defaults
+            if "business_idea" not in item: item["business_idea"] = "Untitled Idea"
+            if "success_rate" not in item: item["success_rate"] = 0.0
             
         return history
     except Exception as e:
+        import traceback
+        print(f"CRITICAL ERROR in get_history: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/save")
@@ -94,8 +96,14 @@ async def get_saved_ideas(current_user: dict = Depends(get_current_user)):
     try:
         saved_col = get_saved_collection()
         user_id = ObjectId(current_user["_id"]) if isinstance(current_user["_id"], str) else current_user["_id"]
-        cursor = saved_col.find({"user_id": user_id}).sort("saved_at", -1)
-        saved = await cursor.to_list(length=100)
+        # Limit to 50 for performance and use projections
+        projection = {
+            "business_idea": 1, "description": 1, "success_rate": 1, 
+            "demand_level": 1, "profit_estimation": 1, "saved_at": 1,
+            "original_id": 1, "user_id": 1
+        }
+        cursor = saved_col.find({"user_id": user_id}, projection).sort("saved_at", -1).limit(50)
+        saved = await cursor.to_list(length=50)
         
         for item in saved:
             item["_id"] = str(item["_id"])
