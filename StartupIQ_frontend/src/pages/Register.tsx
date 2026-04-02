@@ -1,0 +1,108 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
+import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Zap, Mail, Lock, User } from 'lucide-react';
+import { toast } from 'sonner';
+
+const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { register, isLoading } = useAuthStore();
+  const navigate = useNavigate();
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!name.trim()) e.name = 'Name is required';
+    if (!email.trim()) e.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = 'Invalid email';
+    if (!password) e.password = 'Password is required';
+    else if (password.length < 6) e.password = 'Min 6 characters';
+    if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    try {
+      await register(name, email, password);
+      toast.success('Account created successfully');
+      navigate('/dashboard');
+    } catch (err: any) {
+       const errorMessage = err?.response?.data?.detail || 'Registration failed. Try a different email.';
+       setErrors({ email: errorMessage });
+       toast.error(errorMessage);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex min-h-screen items-center justify-center px-4 pt-14">
+        <div className="w-full max-w-sm animate-scale-in">
+          <div className="glass-card p-6">
+            <div className="mb-6 text-center">
+              <div className="gradient-primary mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg">
+                <Zap className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Create Account</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Start your startup journey with StartupIQ</p>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              <div>
+                <Label htmlFor="name" className="text-xs font-medium">Full Name</Label>
+                <div className="relative mt-1.5">
+                  <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="name" placeholder="John Doe" className="pl-8 text-xs" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                {errors.name && <p className="mt-1 text-[11px] text-destructive">{errors.name}</p>}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+                <div className="relative mt-1.5">
+                  <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="email" type="email" placeholder="you@example.com" className="pl-8 text-xs" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                {errors.email && <p className="mt-1 text-[11px] text-destructive">{errors.email}</p>}
+              </div>
+              <div>
+                <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+                <div className="relative mt-1.5">
+                  <Lock className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="password" type="password" placeholder="••••••••" className="pl-8 text-xs" value={password} onChange={(e) => setPassword(e.target.value)} />
+                </div>
+                {errors.password && <p className="mt-1 text-[11px] text-destructive">{errors.password}</p>}
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword" className="text-xs font-medium">Confirm Password</Label>
+                <div className="relative mt-1.5">
+                  <Lock className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input id="confirmPassword" type="password" placeholder="••••••••" className="pl-8 text-xs" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </div>
+                {errors.confirmPassword && <p className="mt-1 text-[11px] text-destructive">{errors.confirmPassword}</p>}
+              </div>
+              <Button type="submit" disabled={isLoading} className="w-full gradient-primary text-primary-foreground border-0 text-xs h-9">
+                {isLoading ? <LoadingSpinner size="sm" /> : 'Create Account'}
+              </Button>
+            </form>
+            <p className="mt-5 text-center text-[11px] text-muted-foreground">
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-primary hover:underline">Sign in</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Register;

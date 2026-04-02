@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StartupIQ – AI Business Idea Generator</title>
+    <meta name="description" content="StartupIQ is an AI-powered platform that generates and analyzes business ideas using machine learning and Groq AI." />
+    <meta name="keywords" content="startup ideas, AI business generator, entrepreneurship, startup planning" />
+    <meta name="author" content="StartupIQ" />
+
+    <meta property="og:title" content="StartupIQ – AI Business Idea Generator" />
+    <meta property="og:description" content="Generate and analyze startup ideas using AI." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/logo.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/logo.png" />
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="min-h-screen bg-background font-sans antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
