@@ -14,7 +14,10 @@ async def register(user_in: UserCreate):
     except HTTPException as he:
         raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_msg = f"PRODUCTION REGISTRATION CRASH: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -31,7 +34,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     except HTTPException as he:
         raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_msg = f"PRODUCTION LOGIN CRASH: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 from app.database.collections import get_user_collection
 from bson import ObjectId

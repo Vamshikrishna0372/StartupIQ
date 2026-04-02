@@ -69,6 +69,23 @@ app.include_router(insights.router)
 async def root():
     return {"message": "StartupIQ Backend Running"}
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_detail = {
+        "detail": str(exc),
+        "traceback": traceback.format_exc(),
+        "path": request.url.path
+    }
+    logger.error(f"GLOBAL EXCEPTION: {error_detail}")
+    return JSONResponse(
+        status_code=500,
+        content=error_detail
+    )
+
 @app.get("/test-db")
 async def test_db():
     try:
