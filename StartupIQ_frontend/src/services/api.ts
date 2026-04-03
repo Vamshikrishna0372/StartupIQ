@@ -1,16 +1,8 @@
 import axios from 'axios';
 
 // Clean the base URL (e.g., removing any accidental trailing slashes)
-const getBaseUrl = () => {
-  let envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-  if (!envUrl || envUrl.trim() === '' || envUrl === '/') {
-    envUrl = 'https://startupiq-nkxn.onrender.com'; // Mandatory fallback in production
-  }
-  return envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
-};
-
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: 'https://startupiq-nkxn.onrender.com',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
