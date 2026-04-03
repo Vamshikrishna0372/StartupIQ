@@ -37,7 +37,15 @@ export const Navbar = () => {
           <Button variant="ghost" size="icon" onClick={toggle} className="h-8 w-8">
             {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
           </Button>
-          {isAuthenticated ? (
+          {location.pathname === '/login' ? (
+            <Link to="/register">
+              <Button size="sm" className="h-8 gradient-primary text-primary-foreground border-0 text-xs">
+                Sign Up
+              </Button>
+            </Link>
+          ) : location.pathname === '/register' ? (
+            <Link to="/login"><Button variant="ghost" size="sm" className="h-8 text-xs">Sign In</Button></Link>
+          ) : isAuthenticated ? (
             <>
               <Link to="/dashboard"><Button variant="outline" size="sm" className="h-8 text-xs">Dashboard</Button></Link>
               <Button variant="ghost" size="sm" onClick={logout} className="h-8 text-xs">Logout</Button>
@@ -74,7 +82,13 @@ export const Navbar = () => {
               {isDark ? <Sun className="mr-2 h-3.5 w-3.5" /> : <Moon className="mr-2 h-3.5 w-3.5" />}
               {isDark ? 'Light Mode' : 'Dark Mode'}
             </Button>
-            {isAuthenticated ? (
+            {location.pathname === '/login' ? (
+              <Link to="/register" onClick={() => setMobileOpen(false)}>
+                <Button size="sm" className="w-full h-8 gradient-primary text-primary-foreground border-0 text-xs">Sign Up</Button>
+              </Link>
+            ) : location.pathname === '/register' ? (
+              <Link to="/login" onClick={() => setMobileOpen(false)}><Button variant="ghost" size="sm" className="w-full h-8 text-xs">Sign In</Button></Link>
+            ) : isAuthenticated ? (
               <>
                 <Link to="/dashboard" onClick={() => setMobileOpen(false)}><Button variant="outline" size="sm" className="w-full h-8 text-xs">Dashboard</Button></Link>
                 <Button variant="ghost" size="sm" onClick={() => { logout(); setMobileOpen(false); }} className="h-8 text-xs">Logout</Button>

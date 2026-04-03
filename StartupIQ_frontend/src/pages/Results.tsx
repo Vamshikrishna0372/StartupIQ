@@ -30,8 +30,14 @@ const Results = () => {
     }
   }, []);
 
-  const handleSave = async (id: string | undefined) => {
+  const handleSave = async (id: string | undefined, isSaved: boolean = false) => {
     if (!id) return;
+    
+    if (isSaved) {
+      toast.info('This concept is already saved in your library.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       await saveIdea(id);
@@ -87,11 +93,11 @@ const Results = () => {
             <div className="mb-3 flex items-start justify-between">
               <h3 className="text-lg font-bold text-foreground leading-snug">{r.business_idea}</h3>
               <Button 
-                onClick={() => handleSave(r._id || r.id)} 
+                onClick={() => handleSave(r._id || r.id, !!r.is_saved)} 
                 variant={r.is_saved ? "default" : "outline"} 
                 size="sm" 
-                disabled={isSaving || r.is_saved}
-                className="shrink-0 gap-2 h-8"
+                disabled={isSaving}
+                className={`shrink-0 gap-2 h-8 ${r.is_saved ? 'bg-success hover:bg-success/90 text-success-foreground font-bold' : ''}`}
               >
                 {r.is_saved ? (
                   <><ShieldCheck className="h-3 w-3" /> Saved</>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Zap, Mail, Lock, User } from 'lucide-react';
+import { Zap, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Register = () => {
@@ -47,8 +47,12 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="flex min-h-screen items-center justify-center px-4 pt-14">
-        <div className="w-full max-w-sm animate-scale-in">
+      <div className="flex min-h-screen items-center justify-center px-4 pt-14 relative">
+        <Link to="/" className="absolute top-24 left-6 md:left-12 flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group">
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          Back to Home
+        </Link>
+        <div className="w-full max-w-sm animate-scale-in mt-8 md:mt-0">
           <div className="glass-card p-6">
             <div className="mb-6 text-center">
               <div className="gradient-primary mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg">

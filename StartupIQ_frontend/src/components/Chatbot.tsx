@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,7 +60,10 @@ export const Chatbot = () => {
     }
   };
 
-  if (!isAuthenticated) return null;
+  const location = useLocation();
+  const hiddenRoutes = ['/', '/login', '/register'];
+
+  if (!isAuthenticated || hiddenRoutes.includes(location.pathname)) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
