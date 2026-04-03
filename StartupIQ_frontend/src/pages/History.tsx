@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Clock, Lightbulb, Target, FolderOpen, GitCompare, Filter, Calendar, ArrowRight } from 'lucide-react';
 import { useIdeaStore } from '@/stores/ideaStore';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const typeIcons: Record<string, any> = { generate: Lightbulb, analyze: Target, save: FolderOpen, compare: GitCompare };
@@ -18,6 +18,7 @@ const History = () => {
   
   const { getHistory, setResults } = useIdeaStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchHistory();
@@ -36,7 +37,18 @@ const History = () => {
     }
   };
 
-  const filtered = filter === 'all' ? historyItems : historyItems.filter(h => h.action_type === filter);
+  const searchParams = new URLSearchParams(location.search);
+  const searchString = searchParams.get('search')?.toLowerCase() || '';
+
+  const filtered = historyItems.filter(h => {
+    if (filter !== 'all' && h.action_type !== filter) return false;
+    if (searchString) {
+      const matchIdea = h.business_idea?.toLowerCase().includes(searchString);
+      const matchDesc = h.description?.toLowerCase().includes(searchString);
+      if (!matchIdea && !matchDesc) return false;
+    }
+    return true;
+  });
 
   return (
     <DashboardLayout title="History" subtitle="Your past idea generations and analyses">

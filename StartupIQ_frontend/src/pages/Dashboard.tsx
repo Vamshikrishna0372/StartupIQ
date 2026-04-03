@@ -46,9 +46,9 @@ const Dashboard = () => {
       <div className="space-y-5 animate-fade-in">
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard icon={BarChart3} title="Total Analyses" value={stats?.total_analyses || 0} change="+12% this month" changeType="positive" />
-          <StatCard icon={TrendingUp} title="Avg Success Rate" value={`${stats?.avg_success_rate || 0}%`} change="+5% improvement" changeType="positive" />
-          <StatCard icon={Lightbulb} title="Saved Ideas" value={stats?.saved_ideas_count || 0} change="Real-time data" changeType="neutral" />
+          <StatCard icon={BarChart3} title="Total Analyses" value={stats?.total_analyses || 0} />
+          <StatCard icon={TrendingUp} title="Avg Success Rate" value={`${stats?.avg_success_rate || 0}%`} />
+          <StatCard icon={Lightbulb} title="Saved Ideas" value={stats?.saved_ideas_count || 0} change="Real-time live data" changeType="neutral" />
         </div>
 
         {/* Charts */}

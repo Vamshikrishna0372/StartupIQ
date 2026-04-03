@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// Clean the base URL (e.g., removing any accidental trailing slashes)
+// Clean the base URL securely, utilizing environment config with a hardcoded production fallback
+const API_BASE = import.meta.env.VITE_API_URL || 'https://startupiq-nkxn.onrender.com';
+
 const api = axios.create({
-  baseURL: 'https://startupiq-nkxn.onrender.com',
+  baseURL: API_BASE,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

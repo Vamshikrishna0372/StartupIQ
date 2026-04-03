@@ -36,8 +36,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      toast.success(`Searching for: ${searchQuery}`);
-      // Implement global search routing here when API is ready
+      navigate(`/history?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
     }
   };
@@ -63,7 +62,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
                 <Input 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..." 
+                  placeholder="Search ideas..." 
                   className="h-8 w-56 pl-8 text-xs bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary" 
                 />
               </form>
