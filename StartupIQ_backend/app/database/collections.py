@@ -2,6 +2,8 @@ from app.database.db import db_manager
 
 # Collections that are more easily accessible
 def get_user_collection():
+    if db_manager.db is None:
+        return None
     return db_manager.db.users
 
 def get_ideas_collection():

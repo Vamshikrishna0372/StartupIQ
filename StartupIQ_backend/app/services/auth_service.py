@@ -13,6 +13,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 async def get_user_by_email(email: str):
     users_col = get_user_collection()
+    if users_col is None:
+        raise HTTPException(status_code=503, detail="Database connection not ready")
     return await users_col.find_one({"email": email})
 
 async def create_new_user(user_in: UserCreate):

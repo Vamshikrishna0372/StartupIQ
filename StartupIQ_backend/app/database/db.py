@@ -17,8 +17,9 @@ class Database:
             await self.initialize_indexes()
             logger.info("Successfully connected to MongoDB and initialized indexes.")
         except Exception as e:
-            logger.error(f"Could not connect to MongoDB: {e}")
-            raise e
+            logger.error(f"Could not connect to MongoDB on startup: {e}")
+            # NO RAISE: Allow app to start so we can use health checks to debug
+            pass
 
     async def initialize_indexes(self):
         """Create indexes for high-speed lookups."""

@@ -4,12 +4,14 @@ from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 
-# Password hashing configuration
-# Including pbkdf2_sha256 as fallback for production stability on some cloud platforms
-pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")
+# Use sha256_crypt which is reliable across all platforms without bcrypt's 72-char limit
+pwd_context = CryptContext(schemes=["sha256_crypt", "bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        return False
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)

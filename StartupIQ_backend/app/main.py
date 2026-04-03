@@ -23,20 +23,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration - comprehensive list for development
-origins = [
-    "http://localhost:8080",
-    "http://localhost:8081",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:3000",
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1:8081",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:3000",
-]
-
 # CORS - Production Whitelist
 allowed_origins = [
     "https://startup-iq-plum.vercel.app",
@@ -86,6 +72,39 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content=error_detail
     )
+
+@app.get("/health")
+async def health_check():
+    """Production health check - returns DB and config status."""
+    import os
+    from app.core.security import pwd_context
+    
+    db_ok = False
+    db_error = None
+    try:
+        if db_manager.db is not None:
+            await db_manager.client.admin.command('ping')
+            db_ok = True
+        else:
+            db_error = "Database not initialized"
+    except Exception as e:
+        db_error = str(e)
+    
+    hash_ok = False
+    try:
+        h = pwd_context.hash("test")
+        hash_ok = pwd_context.verify("test", h)
+    except Exception as e:
+        pass
+    
+    return {
+        "status": "running",
+        "database": "connected" if db_ok else f"error: {db_error}",
+        "hashing": "ok" if hash_ok else "error",
+        "mongo_uri_set": bool(os.environ.get("MONGO_URI")),
+        "secret_key_set": bool(os.environ.get("SECRET_KEY")),
+        "groq_key_set": bool(os.environ.get("GROQ_API_KEY")),
+    }
 
 @app.get("/test-db")
 async def test_db():

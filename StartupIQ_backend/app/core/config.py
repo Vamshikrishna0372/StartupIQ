@@ -3,15 +3,15 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # MongoDB Config
-    MONGO_URI: str
+    MONGO_URI: str = "mongodb://localhost:27017/startupiq"
     
     # AI Config
     GROQ_API_KEY: Optional[str] = None
     
     # Security Config
-    SECRET_KEY: str
+    SECRET_KEY: str = "production_fallback_secret_key_12345"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440 # 24 hours
     
     # App Config
     PROJECT_NAME: str = "StartupIQ"
