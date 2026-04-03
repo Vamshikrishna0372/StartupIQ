@@ -14,6 +14,7 @@ const Insights = () => {
   const { results, getHistory } = useIdeaStore();
   const [history, setHistory] = useState<any[]>([]);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingHistory, setIsFetchingHistory] = useState(true);
 
@@ -26,11 +27,7 @@ const Insights = () => {
       const data = await getHistory();
       const extracted = Array.isArray(data) ? data : ((data as any).history || []);
       setHistory(extracted);
-      
-      // Auto analyze the first one if available and no current analysis exists
-      if (extracted.length > 0 && !analysis) {
-        handleAnalyze(extracted[0]);
-      }
+      // User explicitly requested NOT to select anything on reload.
     } catch (e) {
       toast.error('Failed to load history');
     } finally {
@@ -40,9 +37,11 @@ const Insights = () => {
 
   const handleAnalyze = async (idea: any) => {
     try {
+      const id = idea._id || idea.id;
+      setSelectedIdeaId(id);
       setIsLoading(true);
       const res = await insightsApi.analyze({
-        idea_id: idea._id || idea.id,
+        idea_id: id,
         business_idea: idea.business_idea,
         description: idea.description
       });
@@ -50,6 +49,7 @@ const Insights = () => {
       toast.success('Deep analysis completed!');
     } catch (e) {
       toast.error('Failed to generate insights');
+      // If it fails, we keep the selection but don't show new data
     } finally {
       setIsLoading(false);
     }
@@ -73,29 +73,32 @@ const Insights = () => {
             <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary/70">{history.length} Saved Concepts</Badge>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {history.slice(0, 10).map((item, i) => (
-              <button 
-                key={item._id || i} 
-                onClick={() => handleAnalyze(item)}
-                disabled={isLoading}
-                className={`text-left p-3 rounded-xl border text-[11px] transition-all duration-200 group relative ${
-                  analysis?.idea === item.business_idea 
-                    ? 'bg-primary/5 border-primary ring-1 ring-primary/20 shadow-sm' 
-                    : 'bg-card border-border hover:bg-muted/50 hover:border-border/80'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className={cn("p-1.5 rounded-lg", analysis?.idea === item.business_idea ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                    <Lightbulb className="h-2.5 w-2.5" />
+            {history.slice(0, 10).map((item, i) => {
+              const isSelected = selectedIdeaId === (item._id || item.id);
+              return (
+                <button 
+                  key={item._id || i} 
+                  onClick={() => handleAnalyze(item)}
+                  disabled={isLoading}
+                  className={`text-left p-3 rounded-xl border text-[11px] transition-all duration-200 group relative ${
+                    isSelected 
+                      ? 'bg-primary border-primary text-primary-foreground shadow-md ring-2 ring-primary/30' 
+                      : 'bg-card border-border hover:bg-muted/50 hover:border-border/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className={cn("p-1.5 rounded-lg", isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                      <Lightbulb className="h-2.5 w-2.5" />
+                    </div>
+                    <span className={cn("font-bold truncate", isSelected ? "text-primary-foreground" : "text-foreground")}>{item.business_idea}</span>
                   </div>
-                  <span className="font-bold truncate text-foreground">{item.business_idea}</span>
-                </div>
-                <div className="text-[10px] text-muted-foreground line-clamp-1 group-hover:line-clamp-none transition-all">{item.description}</div>
-                {analysis?.idea === item.business_idea && (
-                  <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-primary" />
-                )}
-              </button>
-            ))}
+                  <div className={cn("text-[10px] line-clamp-1 group-hover:line-clamp-none transition-all", isSelected ? "text-primary-foreground/80" : "text-muted-foreground")}>{item.description}</div>
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -217,13 +220,50 @@ const Insights = () => {
             </div>
           </>
         ) : (
-          <div className="glass-card p-20 text-center animate-fade-in">
-              <Lightbulb className="mx-auto h-10 w-10 text-muted-foreground/30 mb-4" />
-              <h3 className="text-sm font-bold mb-2">No Ideas to Analyze</h3>
-              <p className="text-xs text-muted-foreground max-w-xs mx-auto">Generate a concept first to trigger a deep AI strategic analysis.</p>
-              <Button onClick={() => window.location.href='/generate'} size="sm" className="mt-6 gap-2">
-                 Go to Generator <ArrowRight className="h-3 w-3" />
-              </Button>
+          <div className="glass-card p-8 animate-fade-in">
+             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
+                <div className="gradient-primary p-3 rounded-lg text-primary-foreground shadow-sm">
+                   <Brain className="h-6 w-6" />
+                </div>
+                <div>
+                   <h3 className="text-lg font-bold">General Portfolio Insights</h3>
+                   <p className="text-xs text-muted-foreground">Select a specific idea above for deep analysis, or review your aggregated statistics below.</p>
+                </div>
+             </div>
+             
+             {history.length > 0 ? (
+               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                 <div className="bg-card border border-border p-4 rounded-xl">
+                    <p className="text-xs text-muted-foreground mb-1">Total Concepts</p>
+                    <p className="text-2xl font-bold text-foreground">{history.length}</p>
+                 </div>
+                 <div className="bg-card border border-border p-4 rounded-xl">
+                    <p className="text-xs text-muted-foreground mb-1">Average Success Rate</p>
+                    <p className="text-2xl font-bold text-success">
+                       {Math.round(history.reduce((acc, curr) => acc + (curr.success_rate || 50), 0) / history.length)}%
+                    </p>
+                 </div>
+                 <div className="bg-card border border-border p-4 rounded-xl">
+                    <p className="text-xs text-muted-foreground mb-1">Most Common Market</p>
+                    <p className="text-lg font-bold text-foreground mt-1 capitalize text-primary">
+                       {history[0]?.demand_level || 'Medium'} Demand
+                    </p>
+                 </div>
+                 <div className="bg-card border border-border p-4 rounded-xl">
+                    <p className="text-xs text-muted-foreground mb-1">Latest Generated</p>
+                    <p className="text-sm font-bold text-foreground mt-1 line-clamp-1">
+                       {history[0]?.business_idea || 'N/A'}
+                    </p>
+                 </div>
+               </div>
+             ) : (
+               <div className="text-center py-10">
+                 <p className="text-sm text-muted-foreground">You don't have any ideas saved yet. Please generate some ideas to see insights.</p>
+                 <Button onClick={() => window.location.href='/generate'} size="sm" className="mt-4 gap-2">
+                   Go to Generator <ArrowRight className="h-3 w-3" />
+                 </Button>
+               </div>
+             )}
           </div>
         )}
       </div>
