@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { DashboardSidebar } from './DashboardSidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuthStore } from '@/stores/authStore';
@@ -5,6 +6,7 @@ import { Bell, Search, LogOut, User, Settings as SettingsIcon } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,12 +24,22 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      toast.success(`Searching for: ${searchQuery}`);
+      // Implement global search routing here when API is ready
+      setSearchQuery('');
+    }
   };
 
   return (
@@ -46,10 +58,15 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative hidden lg:block">
+              <form onSubmit={handleSearch} className="relative hidden lg:block">
                 <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Search..." className="h-8 w-56 pl-8 text-xs bg-muted/50 border-0" />
-              </div>
+                <Input 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..." 
+                  className="h-8 w-56 pl-8 text-xs bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary" 
+                />
+              </form>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative h-8 w-8">
