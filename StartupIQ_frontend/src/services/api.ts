@@ -2,8 +2,10 @@ import axios from 'axios';
 
 // Clean the base URL (e.g., removing any accidental trailing slashes)
 const getBaseUrl = () => {
-  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://startupiq-nkxn.onrender.com';
-  // If the user accidentally sets VITE_API_URL with a trailing slash or an incorrect /api/v1 path, clean it up
+  let envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  if (!envUrl || envUrl.trim() === '' || envUrl === '/') {
+    envUrl = 'https://startupiq-nkxn.onrender.com'; // Mandatory fallback in production
+  }
   return envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
 };
 
@@ -48,10 +50,14 @@ api.interceptors.response.use(
     }
 
     const isAuthRequest = error.config?.url?.includes('/auth/login');
-    if (error.response && error.response.status === 401 && !isAuthRequest) {
-      localStorage.removeItem('token');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+    if (error.response && error.response.status === 401) {
+      if (isAuthRequest) {
+          console.error("CRITICAL PRODUCTION NOTE: The 401 Unauthorized here strictly means your password is wrong or this account does not exist in the Render Production MongoDB database. Please register a new account on this production site!");
+      } else {
+        localStorage.removeItem('token');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
