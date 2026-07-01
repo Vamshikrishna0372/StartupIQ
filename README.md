@@ -276,7 +276,7 @@ StartupIQ
 ## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/StartupIQ.git
+https://github.com/Vamshikrishna0372/StartupIQ.git
 
 cd StartupIQ
 ```
